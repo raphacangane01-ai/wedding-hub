@@ -1,0 +1,63 @@
+name: Corrigir vínculo automático de cônjuges
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Adicionar sincronização bilateral de cônjuges
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* WEDDING_HUB_SPOUSE_SYNC_V1 */'
+          if marker in s:
+              print('Correção já aplicada.')
+              raise SystemExit(0)
+          old = 'render()})();</script></body></html>'
+          new = r'''/* WEDDING_HUB_SPOUSE_SYNC_V1 */
+          function syncSpouses(){
+            let changed=false;
+            const byId=new Map(st.guests.map(g=>[g.id,g]));
+            st.guests.forEach(g=>{
+              if(g.spouse){
+                const sp=byId.get(g.spouse);
+                if(!sp || sp.id===g.id){g.spouse='';changed=true;return;}
+                if(sp.spouse!==g.id){sp.spouse=g.id;changed=true;}
+              }
+            });
+            if(changed) save();
+          }
+          const _renderWeddingHub=render;
+          render=function(){syncSpouses();_renderWeddingHub();};
+          document.addEventListener('change',function(e){
+            if(e.target && e.target.id==='gspouse'){
+              const id=e.target.value;
+              const adults=st.guests.filter(g=>g.type==='Adulto');
+              const target=adults.find(g=>g.id===id);
+              if(target){
+                st.__pendingSpouse=id;
+                save();
+              }
+            }
+          });
+          render()})();</script></body></html>'''
+          if old not in s:
+              raise SystemExit('Ponto de inserção não encontrado.')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Publicar correção
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/fix-spouse.yml
+          git commit -m 'Corrigir vínculo bilateral de cônjuges'
+          git push
