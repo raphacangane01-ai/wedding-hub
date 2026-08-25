@@ -1,0 +1,45 @@
+name: Connect Wedding Hub Cloud
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  connect-cloud:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject cloud synchronization
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          marker = '<!-- WEDDING_HUB_CLOUD_CONNECTED -->'
+          if marker not in text:
+              needle = '</body>'
+              if needle not in text:
+                  raise SystemExit('index.html não contém </body>')
+              injection = '''<!-- WEDDING_HUB_CLOUD_CONNECTED -->\n<script type="module" src="./cloud.js"></script>\n'''
+              text = text.replace(needle, injection + needle, 1)
+              p.write_text(text, encoding='utf-8')
+          else:
+              print('Cloud já conectado.')
+
+      - name: Commit cloud connection
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "Nenhuma alteração necessária."
+          else
+            git commit -m "Conectar interface ao banco online"
+            git push
+          fi
