@@ -1,0 +1,1 @@
+const s=document.createElement('script');s.type='module';s.src='./cloud.js?v=2';document.head.appendChild(s);
