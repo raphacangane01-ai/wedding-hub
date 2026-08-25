@@ -14,22 +14,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Inject cloud synchronization
+      - name: Garantir conexão cloud no index
         shell: python
         run: |
           from pathlib import Path
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
           marker = '<!-- WEDDING_HUB_CLOUD_CONNECTED -->'
+          import re
+          text = re.sub(r'<script type="module" src="\./cloud\.js(?:\?[^\"]*)?"></script>', '<script type="module" src="./cloud.js?v=5"></script>', text)
           if marker not in text:
               needle = '</body>'
               if needle not in text:
                   raise SystemExit('index.html não contém </body>')
-              injection = '''<!-- WEDDING_HUB_CLOUD_CONNECTED -->\n<script type="module" src="./cloud.js"></script>\n'''
-              text = text.replace(needle, injection + needle, 1)
-              p.write_text(text, encoding='utf-8')
-          else:
-              print('Cloud já conectado.')
+              text = text.replace(needle, marker+'\n<script type="module" src="./cloud.js?v=5"></script>\n'+needle, 1)
+          p.write_text(text, encoding='utf-8')
 
       - name: Commit cloud connection
         shell: bash
@@ -40,6 +39,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Nenhuma alteração necessária."
           else
-            git commit -m "Conectar interface ao banco online"
+            git commit -m "Atualizar conexão online do Wedding Hub"
             git push
           fi
