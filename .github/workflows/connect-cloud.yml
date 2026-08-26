@@ -18,16 +18,12 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
           p = Path('index.html')
           text = p.read_text(encoding='utf-8')
-          marker = '<!-- WEDDING_HUB_CLOUD_CONNECTED -->'
-          import re
-          text = re.sub(r'<script type="module" src="\./cloud\.js(?:\?[^\"]*)?"></script>', '<script type="module" src="./cloud.js?v=5"></script>', text)
-          if marker not in text:
-              needle = '</body>'
-              if needle not in text:
-                  raise SystemExit('index.html não contém </body>')
-              text = text.replace(needle, marker+'\n<script type="module" src="./cloud.js?v=5"></script>\n'+needle, 1)
+          text = re.sub(r'<script type="module" src="\./cloud\.js(?:\?[^\"]*)?"></script>', '<script type="module" src="./cloud.js?v=6"></script>', text)
+          if './cloud-loader.js?v=6' not in text and './cloud.js?v=6' not in text:
+              text = text.replace('</body>', '<script src="./cloud-loader.js?v=6"></script>\n</body>', 1)
           p.write_text(text, encoding='utf-8')
 
       - name: Commit cloud connection
