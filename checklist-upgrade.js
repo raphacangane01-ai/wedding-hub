@@ -1,6 +1,2 @@
-(()=>{
-'use strict';
-// Checklist centralizado em wedding-features.js.
-// Este arquivo permanece como compatibilidade para versões anteriores e não registra
-// listeners próprios, evitando conflito com o formulário principal.
-})();
+// Compatibility loader: the checklist implementation lives in wedding-features.js.
+import './wedding-features.js?v=3';
