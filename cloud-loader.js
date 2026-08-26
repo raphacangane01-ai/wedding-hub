@@ -1,1 +1,1 @@
-const s=document.createElement('script');s.type='module';s.src='./cloud.js?v=2';document.head.appendChild(s);
+const s=document.createElement('script');s.type='module';s.src='./cloud.js?v=3';document.head.appendChild(s);
