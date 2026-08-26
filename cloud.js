@@ -24,3 +24,4 @@ async function poll(userId){try{const {data,error}=await supabase.from(TABLE).se
 async function boot(){patchStorage();const {data:{session}}=await supabase.auth.getSession();if(!session){overlay();return}try{await syncInitial(session.user.id);authReady=true;subscribeRealtime(session.user.id);setInterval(()=>poll(session.user.id),5000);toast('Dados sincronizados na nuvem')}catch(e){console.error(e);toast('Não foi possível sincronizar agora')}supabase.auth.onAuthStateChange((_event,newSession)=>{if(!newSession)location.reload()})}
 window.addEventListener('load',boot);
 import './auto-budget.js?v=2';
+import './checklist-upgrade.js?v=1';
