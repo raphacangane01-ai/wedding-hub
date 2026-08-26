@@ -25,3 +25,4 @@ async function boot(){patchStorage();const {data:{session}}=await supabase.auth.
 window.addEventListener('load',boot);
 import './auto-budget.js?v=2';
 import './checklist-upgrade.js?v=1';
+import './payment-upgrade.js?v=1';
